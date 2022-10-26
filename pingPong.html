@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pingPong</title>
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        
+        canvas {
+            display: block;
+            margin: 10px auto;
+            border: solid 4px black;
+        }
+    </style>
+    </title>
+</head>
+
+<body>
+    <canvas></canvas>
+    <script>
+        const canvas = document.querySelector("canvas")
+        const width = canvas.width = "800"
+        const height = canvas.height = "600"
+        const ctx = canvas.getContext("2d")
+        const rightPadPos = {
+            x: (width - 25),
+            y: height / 2 - 50,
+            sizeX: 10,
+            sizeY: 100
+        }
+        const leftPadPos = {
+            x: 25,
+            y: height / 2 - 50,
+            sizeX: 10,
+            sizeY: 100
+        }
+        const ballPos = {
+            x: rightPadPos.x - 30,
+            y: rightPadPos.y + 45,
+            radius: 30
+        }
+        let dx = 5,
+            dy = 2,
+            pady = 0,
+            vel = 5
+        let up = false,
+            down = false
+        let interval = null
+
+        function drawLine(pos) {
+            let posX = width / 2
+            let posY = pos
+            ctx.beginPath()
+            ctx.moveTo(posX, posY)
+            ctx.lineTo(posX, posY + 15);
+            ctx.stroke()
+            ctx.closePath()
+        }
+        document.addEventListener("keydown", function(event) {
+            if (event.key == "ArrowUp")
+                up = true
+            if (event.key == "ArrowDown")
+                down = true
+
+        })
+
+        document.addEventListener("keyup", function(event) {
+            if (event.key == "ArrowUp")
+                up = false
+            if (event.key == "ArrowDown")
+                down = false
+
+        })
+
+        function instancesOfObjects() {
+            rightPad = new Pad(rightPadPos.x, rightPadPos.y, rightPadPos.sizeX, rightPadPos.sizeY)
+            leftPad = new Pad(leftPadPos.x, leftPadPos.y, leftPadPos.sizeX, leftPadPos.sizeY)
+            ball = new Ball(ballPos.x, ballPos.y, ballPos.radius)
+
+        }
+
+        function ballMove() {
+            // if (ball.x - ball.radius < 0) {
+            //     dx = -dx
+            // }
+
+            if (ball.x + ball.radius > rightPad.x && ball.x < rightPad.x + rightPad.sizeX && ball.y + ball.radius > rightPad.y && ball.y < rightPad.y + rightPad.sizeY) {
+                dx = -dx
+            }
+            if (ball.x + ball.radius > leftPad.x && ball.x - ball.radius < leftPad.x + leftPad.sizeX && ball.y + ball.radius > leftPad.y && ball.y < leftPad.y + leftPad.sizeY) {
+                dx = -dx
+            }
+
+            if (ball.y + ball.radius > height || ball.y - ball.radius < 0) {
+                dy = -dy
+            }
+            ball.x += dx
+            ball.y += dy
+        }
+
+        function rightPadMove() {
+
+            if (up == true) {
+                pady = -vel
+                rightPad.y += pady
+            }
+            if (down == true) {
+                pady = vel
+                rightPad.y += pady
+
+            }
+
+
+        }
+
+        function gameOver() {
+            if (ball.x + ball.radius > width) {
+
+                alert("player one won")
+                cancelAnimationFrame(interval)
+            } else if (ball.x + ball.radius < 0) {
+                cancelAnimationFrame(interval)
+                alert("player two won")
+            }
+        }
+
+        function leftPadMove() {
+            leftPad.y = ball.y - ball.radius
+
+        }
+
+        function detectWall() {
+            if (rightPad.y + rightPad.sizeY > height) {
+                down = false
+            }
+            if (rightPad.y < 0) {
+                up = false
+            }
+        }
+
+        function detectWallLeft() {
+
+            if (leftPad.y < 0) {
+                up = false
+            }
+            if (leftPad.y + leftPad.sizeY > height) {
+                down = false
+            }
+        }
+
+        function drawLines() {
+            for (let i = 0; i < height; i += 20) {
+                drawLine(i)
+            }
+        }
+        class Pad {
+            constructor(x, y, sizeX, sizeY) {
+                this.x = x,
+                    this.y = y,
+                    this.sizeX = sizeX,
+                    this.sizeY = sizeY
+
+            }
+            draw() {
+                ctx.beginPath()
+                ctx.fillRect(this.x, this.y, this.sizeX, this.sizeY)
+                ctx.closePath()
+            }
+
+        }
+        class Ball {
+            constructor(x, y, radius) {
+                this.x = x,
+                    this.y = y,
+                    this.radius = radius
+
+
+            }
+            draw() {
+                ctx.beginPath()
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2)
+                ctx.stroke()
+                ctx.closePath()
+            }
+
+        }
+
+        instancesOfObjects()
+
+        function animate() {
+            interval = requestAnimationFrame(animate)
+            ctx.clearRect(0, 0, width, height)
+            drawLines()
+            rightPad.draw()
+            leftPad.draw()
+            ball.draw()
+            ballMove()
+            leftPadMove()
+            detectWall()
+            rightPadMove()
+            gameOver()
+
+        }
+        animate()
+    </script>
+</body>
+
+</html>
